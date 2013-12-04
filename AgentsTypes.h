@@ -14,9 +14,16 @@
 
 typedef enum
 {
-	typeAnnounce	= 0,
-	typeDataStruct	= 1
+	msgAnnounce		= 0,
+	msgCommand		= 1,
+	msgDataStruct	= 2
 } eMsgTypes;
+
+typedef enum
+{
+	cmdReset	= 0,
+	cmdPlay		= 1
+} eCmdTypes;
 
 typedef struct
 {
@@ -28,9 +35,20 @@ typedef struct
 typedef struct
 {
 	Uint8	name[AGENT_NAMES_SIZE];
-	Uint16	openPort;
+	Uint16	listeningPort;
 	Uint16	spare;
 } sAnnounce;
+
+typedef struct
+{
+} sConfig;
+
+typedef struct
+{
+	Uint16	cmdType;
+	Uint16	cmdFlags;
+	Uint32	cmdData;
+} sCommand;
 
 typedef struct
 {

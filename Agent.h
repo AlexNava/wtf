@@ -29,7 +29,8 @@ public:
 	virtual ~Agent();
 	bool init(string name);
 
-	bool setRxObject(void *);
+	bool setInputObject(string, void *, size_t);
+	bool setOutputObject(string, void *, size_t);
 	bool setStepCallback(void *);
 	void run();
 
