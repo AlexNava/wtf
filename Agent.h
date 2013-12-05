@@ -13,7 +13,7 @@
 #include "SDL2/SDL_thread.h"
 #include <string>
 using namespace std;
-#include "AgentsTypes.h"
+#include "Protocol.h"
 #include "RxQueue.h"
 #include "TxQueue.h"
 

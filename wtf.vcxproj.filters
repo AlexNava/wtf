@@ -35,13 +35,13 @@
     <ClInclude Include="Agent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AgentsTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RxQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TxQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

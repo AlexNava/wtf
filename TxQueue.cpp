@@ -10,7 +10,7 @@
 #include "SDL2/SDL_net.h"
 
 #include "TxQueue.h"
-#include "AgentsTypes.h"
+#include "Protocol.h"
 
 struct AgentStatus;
 

@@ -6,7 +6,7 @@
  */
 
 #include "Agent.h"
-#include "AgentsTypes.h"
+#include "Protocol.h"
 
 Agent::Agent()
 {

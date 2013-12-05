@@ -98,7 +98,7 @@ copy F:\Projects\SDL2_net-2.0.0\lib\x86\SDL2_net.dll $(OutDir)</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Agent.h" />
-    <ClInclude Include="AgentsTypes.h" />
+    <ClInclude Include="Protocol.h" />
     <ClInclude Include="RxQueue.h" />
     <ClInclude Include="TxQueue.h" />
   </ItemGroup>
