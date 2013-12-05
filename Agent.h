@@ -15,11 +15,20 @@
 using namespace std;
 #include "AgentsTypes.h"
 #include "RxQueue.h"
+#include "TxQueue.h"
+
+typedef enum
+{
+	statusAnnounce,
+	statusConfig,
+	statusRun
+} eStatus;
 
 typedef struct
 {
 	bool bRxRun;
 	bool bTxRun;
+	eStatus xStatus;
 } AgentStatus;
 
 class Agent
@@ -39,6 +48,7 @@ protected:
 	string m_strName;
 private:
 	SDL_Thread *m_pxRxThread;
+	SDL_Thread *m_pxTxThread;
 };
 
 #endif /* AGENT_H_ */

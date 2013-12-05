@@ -10,7 +10,10 @@
 
 #include "SDL2/SDL.h"
 
-#define AGENT_NAMES_SIZE	32
+#define AGENT_NAMES_SIZE		32
+#define AGENT_MAX_PACKET_SIZE	1024
+#define AGENT_MIN_PORT			2013
+#define AGENT_MAX_PORT			3013
 
 typedef enum
 {

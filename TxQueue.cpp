@@ -1,7 +1,7 @@
 /*
- * RxQueue.cpp
+ * TxQueue.h
  *
- *  Created on: Nov 23, 2013
+ *  Created on: Dec 5, 2013
  *      Author: alessandro
  */
 
@@ -9,12 +9,12 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_net.h"
 
-#include "RxQueue.h"
+#include "TxQueue.h"
 #include "AgentsTypes.h"
 
 struct AgentStatus;
 
-int rxQueueFunc(void *pxData)
+int txQueueFunc(void *pxData)
 {
 	AgentStatus *pxStatus = (AgentStatus*)pxData;
 	Uint16 iPort = AGENT_MIN_PORT;
@@ -38,7 +38,7 @@ int rxQueueFunc(void *pxData)
 	while (true)
 	{
 		// Endless loop.
-		// Here the state machine is updated according to received packets, callbacks are invoked etc.
+		// Here the various messages are sent, each one with its specific frequency
 
 		int iPendingSockets = SDLNet_CheckSockets(xSockSet, 5000);
 

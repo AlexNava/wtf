@@ -12,6 +12,7 @@ Agent::Agent()
 {
 	m_xStatus.bTxRun = false;
 	m_xStatus.bRxRun = false;
+	m_xStatus.xStatus = statusAnnounce;
 	m_strName = "";
 
 	if (SDL_Init(0) == -1)
@@ -27,6 +28,7 @@ Agent::Agent()
 	}
 
 	m_pxRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_xStatus);
+	m_pxTxThread = SDL_CreateThread(txQueueFunc, "Tx", &m_xStatus);
 }
 
 Agent::~Agent()
