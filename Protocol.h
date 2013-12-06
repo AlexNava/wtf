@@ -10,7 +10,8 @@
 
 #include "SDL2/SDL.h"
 
-#define AGENT_NAMES_SIZE		32
+#define AGENT_NAME_SIZE			32
+#define STRUCT_NAME_SIZE		32
 #define AGENT_MAX_PACKET_SIZE	1024
 #define AGENT_MIN_PORT			2013
 #define AGENT_MAX_PORT			3013
@@ -24,6 +25,12 @@ typedef enum
 
 typedef enum
 {
+	dataOut		= 0,
+	dataIn		= 1
+} eDataDirection;
+
+typedef enum
+{
 	cmdReset	= 0,
 	cmdPlay		= 1
 } eCmdTypes;
@@ -32,12 +39,14 @@ typedef struct
 {
 	Uint16	msgType;
 	Uint16	spare;
+	Uint32	msgSize;
 	Uint32	checksum;
 } sHeader;
 
 typedef struct
 {
-	Uint8	name[AGENT_NAMES_SIZE];
+	Uint8	name[AGENT_NAME_SIZE];
+	Uint8	familyName[AGENT_NAME_SIZE];
 	Uint16	listeningPort;
 	Uint16	spare;
 } sAnnounce;
@@ -55,7 +64,11 @@ typedef struct
 
 typedef struct
 {
-	Uint32	size;
+	Uint8	name[STRUCT_NAME_SIZE];
+	Uint8	direction;
+	Uint8	period;
+	Uint16	size;
 } sDataStruct;
+
 
 #endif /* PROTOCOLTYPES_H_ */

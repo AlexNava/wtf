@@ -14,6 +14,7 @@ Agent::Agent()
 	m_xStatus.bRxRun = false;
 	m_xStatus.xStatus = statusAnnounce;
 	m_strName = "";
+	m_strFamName = "";
 
 	if (SDL_Init(0) == -1)
 	{
@@ -35,16 +36,25 @@ Agent::~Agent()
 {
 }
 
-bool Agent::init(string name)
+bool Agent::init(string name, string famName)
 {
 	if (name.empty()
-			|| (name.size() > AGENT_NAMES_SIZE)
+			|| (name.size() > AGENT_NAME_SIZE)
 			|| (name.find(' ') != string::npos))
 	{
 		return false;
 	}
 
 	m_strName = name;
+
+	if (famName.empty()
+			|| (famName.size() > AGENT_NAME_SIZE)
+			|| (famName.find(' ') != string::npos))
+	{
+		return false;
+	}
+
+	m_strFamName = famName;
 
 	return true;
 }

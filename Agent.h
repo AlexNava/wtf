@@ -36,7 +36,7 @@ class Agent
 public:
 	Agent();
 	virtual ~Agent();
-	bool init(string name);
+	bool init(string name, string famName = "");
 
 	bool setInputObject(string, void *, size_t);
 	bool setOutputObject(string, void *, size_t);
@@ -46,6 +46,7 @@ public:
 protected:
 	AgentStatus m_xStatus;
 	string m_strName;
+	string m_strFamName;
 private:
 	SDL_Thread *m_pxRxThread;
 	SDL_Thread *m_pxTxThread;
