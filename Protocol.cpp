@@ -1,3 +1,9 @@
+/*
+ * Protocol.cpp
+ *
+ *  Created on: Dec 7, 2013
+ *      Author: alessandro
+ */
 #include "Protocol.h"
 
 Uint32 calcChecksum(Uint8 *message)

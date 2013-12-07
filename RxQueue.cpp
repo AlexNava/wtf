@@ -47,10 +47,48 @@ int rxQueueFunc(void *pxData)
 		}
 		else
 		{
-			printf("Activity on %d sockets\n, ", iPendingSockets);
+			printf("Activity on %d sockets\n", iPendingSockets);
 
 			int iReceivedPackets = SDLNet_UDP_Recv(xSock, pxPacket);
-			printf("received 1 packet, size: %d bytes\n", pxPacket->len);
+			printf("Received 1 packet, size: %d bytes\n", pxPacket->len);
+
+			if (messageValid(pxPacket->data, pxPacket->len))
+			{
+				sHeader		*pxHeader = (sHeader *)pxPacket->data;
+				sAnnounce	*pxAnnounce = NULL;
+				sCommand	*pxCommand = NULL;
+				sDataStruct	*pxDataStruct = NULL;
+
+				switch (pxHeader->msgType)
+				{
+				case msgAnnounce:
+					// Update the network map
+					pxAnnounce = (sAnnounce *)(pxPacket->data + sizeof(sHeader));
+					if (pxStatus->xStatus == statusAnnounce)
+					{
+
+					}
+					else
+					{
+						// Announce messages are not supposed to arrive
+					}
+					break;
+				case msgCommand:
+					// Update the state machine
+					pxCommand = (sCommand *)(pxPacket->data + sizeof(sHeader));
+					pxCommand->cmdType;
+					break;
+				case msgDataStruct:
+					// Update input structures
+					pxDataStruct = (sDataStruct *)(pxPacket->data + sizeof(sHeader));
+					break;
+				}
+
+			}
+			else
+			{
+				printf("Invalid message received\n");
+			}
 		}
 	}
 
