@@ -16,6 +16,9 @@
 #define AGENT_MIN_PORT			2013
 #define AGENT_MAX_PORT			3013
 
+Uint32 calcChecksum(Uint8 *message);
+bool messageValid(Uint8 *message, Uint32 size);
+
 typedef enum
 {
 	msgAnnounce		= 0,
