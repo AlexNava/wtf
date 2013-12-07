@@ -5,14 +5,17 @@
  *      Author: alessandro
  */
 
-#include "Agent.h"
 #include "Protocol.h"
+#include "Agent.h"
 
 Agent::Agent()
 {
-	m_xStatus.bTxRun = false;
-	m_xStatus.bRxRun = false;
 	m_xStatus.xStatus = statusAnnounce;
+	m_xStatus.pxStepSemaphore = NULL;
+	m_xStatus.pxSendSemaphore = NULL;
+	m_pxRxThread = NULL;
+	m_pxTxThread = NULL;
+
 	m_strName = "";
 	m_strFamName = "";
 
@@ -27,9 +30,6 @@ Agent::Agent()
 		printf("SDLNet_Init: %s\n", SDLNet_GetError());
 		exit(2);
 	}
-
-	m_pxRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_xStatus);
-	m_pxTxThread = SDL_CreateThread(txQueueFunc, "Tx", &m_xStatus);
 }
 
 Agent::~Agent()
@@ -47,8 +47,8 @@ bool Agent::init(string name, string famName)
 
 	m_strName = name;
 
-	if (famName.empty()
-			|| (famName.size() > AGENT_NAME_SIZE)
+	// Check for bad characters, but famName can be empty
+	if ((famName.size() > AGENT_NAME_SIZE)
 			|| (famName.find(' ') != string::npos))
 	{
 		return false;
@@ -56,15 +56,19 @@ bool Agent::init(string name, string famName)
 
 	m_strFamName = famName;
 
+	m_xStatus.pxStepSemaphore = SDL_CreateSemaphore(0);
+	m_xStatus.pxSendSemaphore = SDL_CreateSemaphore(0);
+	m_pxRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_xStatus);
+	m_pxTxThread = SDL_CreateThread(txQueueFunc, "Tx", &m_xStatus);
+
 	return true;
 }
 
 void Agent::run()
 {
-	m_xStatus.bTxRun = true;
-	m_xStatus.bRxRun = true;
 	while (true)	// Keep the main process alive
 	{
-		SDL_Delay(10000);
+		SDL_SemWait(m_xStatus.pxStepSemaphore);
+		// Todo: call step callback
 	}
 }

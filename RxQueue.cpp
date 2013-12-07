@@ -10,9 +10,8 @@
 #include "SDL2/SDL_net.h"
 
 #include "RxQueue.h"
+#include "Agent.h"
 #include "Protocol.h"
-
-struct AgentStatus;
 
 int rxQueueFunc(void *pxData)
 {
@@ -38,7 +37,7 @@ int rxQueueFunc(void *pxData)
 	while (true)
 	{
 		// Endless loop.
-		// Here the state machine is updated according to received packets, callbacks are invoked etc.
+		// Here the state machine is updated according to received packets.
 
 		int iPendingSockets = SDLNet_CheckSockets(xSockSet, 5000);
 

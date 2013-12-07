@@ -13,7 +13,6 @@
 #include "SDL2/SDL_thread.h"
 #include <string>
 using namespace std;
-#include "Protocol.h"
 #include "RxQueue.h"
 #include "TxQueue.h"
 
@@ -26,9 +25,9 @@ typedef enum
 
 typedef struct
 {
-	bool bRxRun;
-	bool bTxRun;
 	eStatus xStatus;
+	SDL_sem *pxStepSemaphore;
+	SDL_sem *pxSendSemaphore;
 } AgentStatus;
 
 class Agent
