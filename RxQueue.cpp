@@ -57,7 +57,7 @@ int rxQueueFunc(void *pxData)
 				sHeader		*pxHeader = (sHeader *)pxPacket->data;
 				sAnnounce	*pxAnnounce = NULL;
 				sCommand	*pxCommand = NULL;
-				sDataStruct	*pxDataStruct = NULL;
+				sAnnounceStruct	*pxDataStruct = NULL;
 
 				switch (pxHeader->msgType)
 				{
@@ -80,7 +80,7 @@ int rxQueueFunc(void *pxData)
 					break;
 				case msgDataStruct:
 					// Update input structures
-					pxDataStruct = (sDataStruct *)(pxPacket->data + sizeof(sHeader));
+					pxDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader));
 					break;
 				}
 

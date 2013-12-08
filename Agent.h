@@ -12,6 +12,7 @@
 #include "SDL2/SDL_net.h"
 #include "SDL2/SDL_thread.h"
 #include <string>
+#include <map>
 using namespace std;
 #include "RxQueue.h"
 #include "TxQueue.h"
@@ -19,15 +20,25 @@ using namespace std;
 typedef enum
 {
 	statusAnnounce,
-	statusConfig,
+	statusSetup,
 	statusRun
 } eStatus;
+
+typedef struct
+{
+	Uint16			id;
+	eDataDirection	eDirection;
+	Uint8			period;
+	void			*pData;
+	size_t			size;
+} sStructInfo;
 
 typedef struct
 {
 	eStatus xStatus;
 	SDL_sem *pxStepSemaphore;
 	SDL_sem *pxSendSemaphore;
+	map<string, sStructInfo> xStructures;
 } AgentStatus;
 
 class Agent
@@ -37,8 +48,7 @@ public:
 	virtual ~Agent();
 	bool init(string name, string famName = "");
 
-	bool setInputObject(string, void *, size_t);
-	bool setOutputObject(string, void *, size_t);
+	bool addStruct(string name, void *pData, size_t size, eDataDirection direction, Uint8 period = 1);
 	bool setStepCallback(void *);
 	void run();
 

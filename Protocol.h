@@ -56,6 +56,15 @@ typedef struct
 
 typedef struct
 {
+	Uint8	name[STRUCT_NAME_SIZE];
+	Uint32	size;
+	Uint8	direction;
+	Uint8	period;
+	Uint16	id;	// Used only for input structures, sending nodes will have to use this ID
+} sAnnounceStruct;
+
+typedef struct
+{
 } sConfig;
 
 typedef struct
@@ -64,14 +73,6 @@ typedef struct
 	Uint16	cmdFlags;
 	Uint32	cmdData;
 } sCommand;
-
-typedef struct
-{
-	Uint8	name[STRUCT_NAME_SIZE];
-	Uint8	direction;
-	Uint8	period;
-	Uint16	size;
-} sDataStruct;
 
 
 #endif /* PROTOCOLTYPES_H_ */

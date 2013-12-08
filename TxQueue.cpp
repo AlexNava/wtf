@@ -22,13 +22,18 @@ int txQueueFunc(void *pxData)
 
 	while (true)
 	{
-		// Wait for the semaphore (tx queue follows rx one)
-		SDL_SemWait(pxStatus->pxSendSemaphore);
-
 		switch(pxStatus->xStatus)
 		{
+		case statusAnnounce:
+			// Send announcement messages with a regular interval
+			break;
 		case statusRun:
-			// Send all output structures
+			// Wait for the semaphore (tx queue follows rx one)
+			SDL_SemWait(pxStatus->pxSendSemaphore);
+			if (pxStatus->xStatus != statusRun)	// It can be changed by other threads
+				break;
+			// Send all structures
+
 			break;
 		}
 	}

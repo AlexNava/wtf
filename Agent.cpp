@@ -72,3 +72,25 @@ void Agent::run()
 		// Todo: call step callback
 	}
 }
+
+bool Agent::addStruct(string name, void *pData, size_t size, eDataDirection direction, Uint8 period)
+{
+	if (name.empty()
+			|| (name.size() > STRUCT_NAME_SIZE)
+			|| (name.find(' ') != string::npos))
+		return false;
+
+	if (m_xStatus.xStructures.find(name) != m_xStatus.xStructures.end())
+		return false;
+
+	sStructInfo xStruct;
+	xStruct.id = m_xStatus.xStructures.size();
+	xStruct.pData = pData;
+	xStruct.size = (pData != NULL)? size : 0;
+	xStruct.eDirection = direction;
+	xStruct.period = period;
+
+	m_xStatus.xStructures.insert(pair<string, sStructInfo>(name, xStruct));
+
+	return true;
+}
