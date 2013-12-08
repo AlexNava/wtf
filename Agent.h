@@ -37,6 +37,8 @@ typedef struct
 typedef struct
 {
 	eStatus xStatus;
+	SDL_sem *pxTxGoSemaphore;
+	SDL_sem *pxRxGoSemaphore;
 	SDL_sem *pxStepSemaphore;
 	SDL_sem *pxSendSemaphore;
 	map<string, sStructInfo> xStructures;

@@ -10,6 +10,8 @@
 Agent::Agent()
 {
 	m_xStatus.xStatus = statusDiscover;
+	m_xStatus.pxTxGoSemaphore = NULL;
+	m_xStatus.pxRxGoSemaphore = NULL;
 	m_xStatus.pxStepSemaphore = NULL;
 	m_xStatus.pxSendSemaphore = NULL;
 	m_pxRxThread = NULL;
@@ -55,6 +57,8 @@ bool Agent::init(string name, string famName)
 
 	m_strFamName = famName;
 
+	m_xStatus.pxTxGoSemaphore = SDL_CreateSemaphore(0);
+	m_xStatus.pxRxGoSemaphore = SDL_CreateSemaphore(0);
 	m_xStatus.pxStepSemaphore = SDL_CreateSemaphore(0);
 	m_xStatus.pxSendSemaphore = SDL_CreateSemaphore(0);
 	m_pxRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_xStatus);
@@ -65,6 +69,9 @@ bool Agent::init(string name, string famName)
 
 void Agent::run()
 {
+	// Start queues
+	SDL_SemPost(m_xStatus.pxTxGoSemaphore);
+	SDL_SemPost(m_xStatus.pxRxGoSemaphore);
 	while (true)	// Keep the main process alive
 	{
 		SDL_SemWait(m_xStatus.pxStepSemaphore);

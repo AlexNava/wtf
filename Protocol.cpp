@@ -6,12 +6,12 @@
  */
 #include "Protocol.h"
 
-Uint32 calcChecksum(Uint8 *message)
+Uint32 calcChecksum(void *message)
 {
 	return 0;
 }
 
-bool messageValid(Uint8 *message, Uint32 size)
+bool messageValid(void *message, Uint32 size)
 {
 	if (message == NULL)
 		return false;

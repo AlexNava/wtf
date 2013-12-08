@@ -9,7 +9,6 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_net.h"
 
-#include "RxQueue.h"
 #include "Agent.h"
 
 int rxQueueFunc(void *pxData)
@@ -19,6 +18,9 @@ int rxQueueFunc(void *pxData)
 
 	UDPpacket *pxPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
 	UDPsocket xSock = 0;
+
+	// Wait for run()
+	SDL_SemWait(pxStatus->pxRxGoSemaphore);
 
 	while ((xSock == 0) && (iPort < AGENT_MAX_PORT))
 	{
