@@ -10,8 +10,8 @@
 #include "SDL2/SDL_net.h"
 
 #include "RxQueue.h"
-#include "Agent.h"
 #include "Protocol.h"
+#include "Agent.h"
 
 int rxQueueFunc(void *pxData)
 {
@@ -52,6 +52,13 @@ int rxQueueFunc(void *pxData)
 			int iReceivedPackets = SDLNet_UDP_Recv(xSock, pxPacket);
 			printf("Received 1 packet, size: %d bytes\n", pxPacket->len);
 
+			Uint32 source = pxPacket->address.host;
+			printf("Received msg from %d.%d.%d.%d - ",
+					source & 0x000000ff,
+					(source & 0x0000ff00) >> 8,
+					(source & 0x00ff0000) >> 16,
+					source >> 24);
+
 			if (messageValid(pxPacket->data, pxPacket->len))
 			{
 				sHeader		*pxHeader = (sHeader *)pxPacket->data;
@@ -66,28 +73,33 @@ int rxQueueFunc(void *pxData)
 					pxAnnounce = (sAnnounce *)(pxPacket->data + sizeof(sHeader));
 					if (pxStatus->xStatus == statusAnnounce)
 					{
+						printf("Announcement message.\n");
+						//pxDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader));
 
 					}
 					else
 					{
 						// Announce messages are not supposed to arrive
+						printf("Unexpected announcement message.\n");
 					}
 					break;
 				case msgCommand:
 					// Update the state machine
 					pxCommand = (sCommand *)(pxPacket->data + sizeof(sHeader));
-					pxCommand->cmdType;
+					printf("Command message %d.\n", pxCommand->cmdType);
+
 					break;
 				case msgDataStruct:
 					// Update input structures
-					pxDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader));
+					printf("DataStruct message %d.\n", pxCommand->cmdType);
+
 					break;
 				}
 
 			}
 			else
 			{
-				printf("Invalid message received\n");
+				printf("Invalid message.\n");
 			}
 		}
 	}
