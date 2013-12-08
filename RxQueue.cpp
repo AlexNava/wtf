@@ -70,7 +70,7 @@ int rxQueueFunc(void *pxData)
 				case msgAnnounce:
 					// Update the network map
 					pxAnnounce = (sAnnounce *)(pxPacket->data + sizeof(sHeader));
-					if (pxStatus->xStatus == statusAnnounce)
+					if (pxStatus->xStatus == statusDiscover)
 					{
 						printf("Announcement message.\n");
 						//pxDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader));

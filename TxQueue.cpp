@@ -16,15 +16,19 @@ int txQueueFunc(void *pxData)
 {
 	AgentStatus *pxStatus = (AgentStatus*)pxData;
 
-	UDPpacket *pxPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
-	UDPsocket xSock = 0;
+	UDPpacket *pxDiscoverPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
+	UDPsocket xDiscoverSock = SDLNet_UDP_Open(0);
 
 	while (true)
 	{
 		switch(pxStatus->xStatus)
 		{
-		case statusAnnounce:
+		case statusDiscover:
 			// Send announcement messages with a regular interval
+			for (Uint16 iPort = AGENT_MIN_PORT; iPort < AGENT_MAX_PORT; iPort++)
+			{
+
+			}
 			break;
 		case statusRun:
 			// Wait for the semaphore (tx queue follows rx one)

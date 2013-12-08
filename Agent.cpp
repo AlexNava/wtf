@@ -9,7 +9,7 @@
 
 Agent::Agent()
 {
-	m_xStatus.xStatus = statusAnnounce;
+	m_xStatus.xStatus = statusDiscover;
 	m_xStatus.pxStepSemaphore = NULL;
 	m_xStatus.pxSendSemaphore = NULL;
 	m_pxRxThread = NULL;

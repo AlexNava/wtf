@@ -20,7 +20,7 @@ using namespace std;
 
 typedef enum
 {
-	statusAnnounce,
+	statusDiscover,
 	statusSetup,
 	statusRun
 } eStatus;
