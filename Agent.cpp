@@ -5,7 +5,6 @@
  *      Author: alessandro
  */
 
-#include "Protocol.h"
 #include "Agent.h"
 
 Agent::Agent()

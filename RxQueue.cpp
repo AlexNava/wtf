@@ -10,7 +10,6 @@
 #include "SDL2/SDL_net.h"
 
 #include "RxQueue.h"
-#include "Protocol.h"
 #include "Agent.h"
 
 int rxQueueFunc(void *pxData)

@@ -14,6 +14,7 @@
 #include <string>
 #include <map>
 using namespace std;
+#include "Protocol.h"
 #include "RxQueue.h"
 #include "TxQueue.h"
 

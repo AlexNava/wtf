@@ -11,7 +11,6 @@
 
 #include "TxQueue.h"
 #include "Agent.h"
-#include "Protocol.h"
 
 int txQueueFunc(void *pxData)
 {
