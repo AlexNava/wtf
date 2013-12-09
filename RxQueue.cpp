@@ -21,6 +21,7 @@ int rxQueueFunc(void *pxData)
 
 	// Wait for run()
 	SDL_SemWait(pxStatus->pxRxGoSemaphore);
+	printf("RX queue started.\n");
 
 	while ((xSock == 0) && (iPort < AGENT_MAX_PORT))
 	{

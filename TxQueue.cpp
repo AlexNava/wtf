@@ -18,8 +18,9 @@ int txQueueFunc(void *pxData)
 	UDPpacket *pxDiscoverPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
 	UDPsocket xDiscoverSock = SDLNet_UDP_Open(0);
 
-	// Wait for run()
+	// Wait for RX queue
 	SDL_SemWait(pxStatus->pxTxGoSemaphore);
+	printf("TX queue started.\n");
 
 	while (true)
 	{
@@ -34,6 +35,8 @@ int txQueueFunc(void *pxData)
 				pHeader->spare = 0;
 
 				sAnnounce *pAnnounce = (sAnnounce *)(pxDiscoverPacket->data + sizeof(sHeader));
+				memset((char *)(pAnnounce->name), '\0', AGENT_NAME_SIZE);
+				memset((char *)(pAnnounce->familyName), '\0', AGENT_NAME_SIZE);
 				strncpy((char *)(pAnnounce->name), pxStatus->strName.c_str(), AGENT_NAME_SIZE);
 				strncpy((char *)(pAnnounce->familyName), pxStatus->strFamName.c_str(), AGENT_NAME_SIZE);
 				pAnnounce->listeningPort = pxStatus->listeningPort;
@@ -49,6 +52,7 @@ int txQueueFunc(void *pxData)
 					structArray->id = it->second.id;
 					structArray->direction = it->second.eDirection;
 					structArray->period = it->second.period;
+					memset((char *)(structArray->name), '\0', STRUCT_NAME_SIZE);
 					strncpy((char *)(structArray->name), it->first.c_str(), STRUCT_NAME_SIZE);
 					structArray++;
 				}
@@ -57,9 +61,7 @@ int txQueueFunc(void *pxData)
 
 				for (Uint16 iPort = AGENT_MIN_PORT; iPort < AGENT_MAX_PORT; iPort++)
 				{
-					IPaddress addr;
-					int res = SDLNet_ResolveHost(&addr, "255.255.255.255", iPort);
-					pxDiscoverPacket->address = addr;
+					int res = SDLNet_ResolveHost(&(pxDiscoverPacket->address), "255.255.255.255", iPort);
 					pxDiscoverPacket->len = pHeader->msgSize + sizeof(sHeader);
 					res = SDLNet_UDP_Send(xDiscoverSock, -1, pxDiscoverPacket);
 					SDL_Delay(5);
