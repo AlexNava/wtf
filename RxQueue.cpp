@@ -31,9 +31,13 @@ int rxQueueFunc(void *pxData)
 	}
 
 	printf("Listening on port %d\n", iPort);
+	pxStatus->listeningPort = iPort;
+
 	SDLNet_SocketSet xSockSet;
 	xSockSet = SDLNet_AllocSocketSet(1);
 	SDLNet_UDP_AddSocket(xSockSet, xSock);
+
+	SDL_SemPost(pxStatus->pxTxGoSemaphore);
 
 	while (true)
 	{

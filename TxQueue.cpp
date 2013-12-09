@@ -32,10 +32,17 @@ int txQueueFunc(void *pxData)
 				sHeader *pHeader = (sHeader *)pxDiscoverPacket->data;
 				pHeader->msgType = msgAnnounce;
 				pHeader->spare = 0;
-				Uint32 *structCounter = (Uint32 *)(pxDiscoverPacket->data + sizeof(sHeader));
+
+				sAnnounce *pAnnounce = (sAnnounce *)(pxDiscoverPacket->data + sizeof(sHeader));
+				strncpy((char *)(pAnnounce->name), pxStatus->strName.c_str(), AGENT_NAME_SIZE);
+				strncpy((char *)(pAnnounce->familyName), pxStatus->strFamName.c_str(), AGENT_NAME_SIZE);
+				pAnnounce->listeningPort = pxStatus->listeningPort;
+				pAnnounce->spare = 0;
+
+				Uint32 *structCounter = (Uint32 *)(pxDiscoverPacket->data + sizeof(sHeader) + sizeof (sAnnounce));
 				*structCounter = pxStatus->xStructures.size();
-				sAnnounceStruct *structArray = (sAnnounceStruct *)(pxDiscoverPacket->data + sizeof(sHeader) + sizeof(Uint32));
-				pHeader->msgSize = sizeof(sHeader) + sizeof(Uint32) + *structCounter * sizeof(sAnnounceStruct);
+				sAnnounceStruct *structArray = (sAnnounceStruct *)(pxDiscoverPacket->data + sizeof(sHeader) + sizeof (sAnnounce) + sizeof(Uint32));
+				pHeader->msgSize = sizeof(sHeader) + sizeof (sAnnounce) + sizeof(Uint32) + *structCounter * sizeof(sAnnounceStruct);
 
 				for (map<string, sStructInfo>::iterator it = pxStatus->xStructures.begin(); it != pxStatus->xStructures.end(); it++)
 				{

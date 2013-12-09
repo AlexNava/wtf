@@ -36,6 +36,9 @@ typedef struct
 
 typedef struct
 {
+	string strName;
+	string strFamName;
+	Uint16 listeningPort;
 	eStatus xStatus;
 	SDL_sem *pxTxGoSemaphore;
 	SDL_sem *pxRxGoSemaphore;
@@ -57,8 +60,6 @@ public:
 
 protected:
 	AgentStatus m_xStatus;
-	string m_strName;
-	string m_strFamName;
 private:
 	SDL_Thread *m_pxRxThread;
 	SDL_Thread *m_pxTxThread;

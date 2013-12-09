@@ -9,6 +9,9 @@
 
 Agent::Agent()
 {
+	m_xStatus.strName = "";
+	m_xStatus.strFamName = "";
+	m_xStatus.listeningPort = 0;
 	m_xStatus.xStatus = statusDiscover;
 	m_xStatus.pxTxGoSemaphore = NULL;
 	m_xStatus.pxRxGoSemaphore = NULL;
@@ -16,9 +19,6 @@ Agent::Agent()
 	m_xStatus.pxSendSemaphore = NULL;
 	m_pxRxThread = NULL;
 	m_pxTxThread = NULL;
-
-	m_strName = "";
-	m_strFamName = "";
 
 	if (SDL_Init(0) == -1)
 	{
@@ -46,7 +46,7 @@ bool Agent::init(string name, string famName)
 		return false;
 	}
 
-	m_strName = name;
+	m_xStatus.strName = name;
 
 	// Check for bad characters, but famName can be empty
 	if ((famName.size() > AGENT_NAME_SIZE)
@@ -55,7 +55,7 @@ bool Agent::init(string name, string famName)
 		return false;
 	}
 
-	m_strFamName = famName;
+	m_xStatus.strFamName = famName;
 
 	m_xStatus.pxTxGoSemaphore = SDL_CreateSemaphore(0);
 	m_xStatus.pxRxGoSemaphore = SDL_CreateSemaphore(0);
@@ -69,8 +69,7 @@ bool Agent::init(string name, string famName)
 
 void Agent::run()
 {
-	// Start queues
-	SDL_SemPost(m_xStatus.pxTxGoSemaphore);
+	// Start queues, TX after RX
 	SDL_SemPost(m_xStatus.pxRxGoSemaphore);
 	while (true)	// Keep the main process alive
 	{
