@@ -41,11 +41,10 @@ int txQueueFunc(void *pxData)
 				strncpy((char *)(pAnnounce->familyName), pxStatus->strFamName.c_str(), AGENT_NAME_SIZE);
 				pAnnounce->listeningPort = pxStatus->listeningPort;
 				pAnnounce->spare = 0;
+				pAnnounce->numStructures = pxStatus->xStructures.size();
 
-				Uint32 *structCounter = (Uint32 *)(pxDiscoverPacket->data + sizeof(sHeader) + sizeof (sAnnounce));
-				*structCounter = pxStatus->xStructures.size();
-				sAnnounceStruct *structArray = (sAnnounceStruct *)(pxDiscoverPacket->data + sizeof(sHeader) + sizeof (sAnnounce) + sizeof(Uint32));
-				pHeader->msgSize = sizeof(sHeader) + sizeof (sAnnounce) + sizeof(Uint32) + *structCounter * sizeof(sAnnounceStruct);
+				sAnnounceStruct *structArray = (sAnnounceStruct *)(pxDiscoverPacket->data + sizeof(sHeader) + sizeof (sAnnounce));
+				pHeader->msgSize = sizeof(sHeader) + sizeof (sAnnounce) + pAnnounce->numStructures * sizeof(sAnnounceStruct);
 
 				for (map<string, sStructInfo>::iterator it = pxStatus->xStructures.begin(); it != pxStatus->xStructures.end(); it++)
 				{

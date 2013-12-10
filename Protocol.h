@@ -52,6 +52,7 @@ typedef struct
 	Uint8	familyName[AGENT_NAME_SIZE];
 	Uint16	listeningPort;
 	Uint16	spare;
+	Uint32	numStructures;
 } sAnnounce;
 
 typedef struct
