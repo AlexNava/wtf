@@ -40,6 +40,7 @@ typedef struct
 	string strFamName;
 	Uint16 listeningPort;
 	eStatus xStatus;
+	Uint32 lastTick;
 	SDL_sem *pxTxGoSemaphore;
 	SDL_sem *pxRxGoSemaphore;
 	SDL_sem *pxStepSemaphore;

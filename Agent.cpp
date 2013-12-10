@@ -13,6 +13,7 @@ Agent::Agent()
 	m_xStatus.strFamName = "";
 	m_xStatus.listeningPort = 0;
 	m_xStatus.xStatus = statusDiscover;
+	m_xStatus.lastTick = 0;
 	m_xStatus.pxTxGoSemaphore = NULL;
 	m_xStatus.pxRxGoSemaphore = NULL;
 	m_xStatus.pxStepSemaphore = NULL;
@@ -69,7 +70,7 @@ bool Agent::init(string name, string famName)
 
 void Agent::run()
 {
-	// Start queues, TX after RX
+	// Start queues (when RX is ready, it starts TX)
 	SDL_SemPost(m_xStatus.pxRxGoSemaphore);
 	while (true)	// Keep the main process alive
 	{

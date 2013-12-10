@@ -97,7 +97,7 @@ int rxQueueFunc(void *pxData)
 					break;
 				case msgDataStruct:
 					// Update input structures
-					printf("DataStruct message %d.\n", pxCommand->cmdType);
+					printf("DataStruct message.\n");
 
 					break;
 				}
