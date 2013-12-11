@@ -41,6 +41,7 @@ typedef struct
 	Uint16 listeningPort;
 	eStatus xStatus;
 	Uint32 lastTick;
+	Uint32 currentTick;
 	SDL_sem *pxTxGoSemaphore;
 	SDL_sem *pxRxGoSemaphore;
 	SDL_sem *pxStepSemaphore;

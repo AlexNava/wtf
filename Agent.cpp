@@ -14,6 +14,7 @@ Agent::Agent()
 	m_xStatus.listeningPort = 0;
 	m_xStatus.xStatus = statusDiscover;
 	m_xStatus.lastTick = 0;
+	m_xStatus.currentTick = 0;
 	m_xStatus.pxTxGoSemaphore = NULL;
 	m_xStatus.pxRxGoSemaphore = NULL;
 	m_xStatus.pxStepSemaphore = NULL;

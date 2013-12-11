@@ -93,7 +93,17 @@ int rxQueueFunc(void *pxData)
 					// Update the state machine
 					pxCommand = (sCommand *)(pxPacket->data + sizeof(sHeader));
 					printf("Command message %d.\n", pxCommand->cmdType);
-
+					switch (pxCommand->cmdType)
+					{
+					case cmdReset:
+						pxStatus->lastTick = pxCommand->cmdData;
+						pxStatus->currentTick = pxCommand->cmdData;
+						break;
+					case cmdPlay:
+						pxStatus->lastTick = pxStatus->currentTick;
+						pxStatus->currentTick = pxCommand->cmdData;
+						break;
+					}
 					break;
 				case msgDataStruct:
 					// Update input structures
