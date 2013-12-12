@@ -99,7 +99,9 @@ void Agent::run()
 	while (true)	// Keep the main process alive
 	{
 		SDL_SemWait(m_xStatus.pxStepSemaphore);
+
 		// Call step callback (if it has been set)
+		Sint32 TickDelta = diffWithOverflow(m_xStatus.currentTick, m_xStatus.lastTick);
 		if (m_pStepFunc != NULL)
 			m_pStepFunc();
 	}

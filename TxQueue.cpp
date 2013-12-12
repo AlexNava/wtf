@@ -72,7 +72,9 @@ int txQueueFunc(void *pxData)
 			SDL_SemWait(pxStatus->pxSendSemaphore);
 			if (pxStatus->eAutomaState != stateRun)	// It can be changed by rx thread
 				break;
+
 			// Send all structures
+			Sint32 TickDelta = diffWithOverflow(pxStatus->currentTick, pxStatus->lastTick);
 			break;
 		}
 	}
