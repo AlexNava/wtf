@@ -10,6 +10,7 @@ Uint32 calcChecksum(void *message)
 {
 	// TODO: Adler-32 on the complete message (header + data) with the checksum set to 0
 	// 0xffffffff is not a valid checksum, so i'll use it in case of erors
+	// Checksum is not needed when using Ethernet, so it can wait
 
 	if (message == NULL)
 		return 0xffffffff;

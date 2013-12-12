@@ -77,7 +77,7 @@ int rxQueueFunc(void *pxData)
 				case msgAnnounce:
 					// Update the network map
 					pxAnnounce = (sAnnounce *)(pxPacket->data + sizeof(sHeader));
-					if (pxStatus->xStatus == statusDiscover)
+					if (pxStatus->eAutomaState == stateDiscover)
 					{
 						printf("Announcement message.\n");
 						//pxDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader));
@@ -90,19 +90,28 @@ int rxQueueFunc(void *pxData)
 					}
 					break;
 				case msgCommand:
-					// Update the state machine
-					pxCommand = (sCommand *)(pxPacket->data + sizeof(sHeader));
-					printf("Command message %d.\n", pxCommand->cmdType);
-					switch (pxCommand->cmdType)
 					{
-					case cmdReset:
-						pxStatus->lastTick = pxCommand->cmdData;
-						pxStatus->currentTick = pxCommand->cmdData;
-						break;
-					case cmdPlay:
-						pxStatus->lastTick = pxStatus->currentTick;
-						pxStatus->currentTick = pxCommand->cmdData;
-						break;
+						// Update the state machine
+						pxCommand = (sCommand *)(pxPacket->data + sizeof(sHeader));
+						printf("Command message %d.\n", pxCommand->cmdType);
+						switch (pxCommand->cmdType)
+						{
+						case cmdReset:
+							pxStatus->eAutomaState = stateSetup;
+							pxStatus->lastTick = pxCommand->cmdData;
+							pxStatus->currentTick = pxCommand->cmdData;
+							break;
+						case cmdPlay:
+							pxStatus->eAutomaState = stateRun;
+							pxStatus->lastTick = pxStatus->currentTick;
+							pxStatus->currentTick = pxCommand->cmdData;
+							break;
+						}
+
+						// Release TX queue
+						SDL_SemPost(pxStatus->pxSendSemaphore);
+						// Exec step callback
+						SDL_SemPost(pxStatus->pxStepSemaphore);
 					}
 					break;
 				case msgDataStruct:

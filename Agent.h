@@ -20,10 +20,10 @@ using namespace std;
 
 typedef enum
 {
-	statusDiscover,
-	statusSetup,
-	statusRun
-} eStatus;
+	stateDiscover,
+	stateSetup,
+	stateRun
+} eState;
 
 typedef struct
 {
@@ -39,7 +39,7 @@ typedef struct
 	string strName;
 	string strFamName;
 	Uint16 listeningPort;
-	eStatus xStatus;
+	eState eAutomaState;
 	Uint32 lastTick;
 	Uint32 currentTick;
 	SDL_sem *pxTxGoSemaphore;

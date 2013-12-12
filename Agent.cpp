@@ -12,7 +12,7 @@ Agent::Agent()
 	m_xStatus.strName = "";
 	m_xStatus.strFamName = "";
 	m_xStatus.listeningPort = 0;
-	m_xStatus.xStatus = statusDiscover;
+	m_xStatus.eAutomaState = stateDiscover;
 	m_xStatus.lastTick = 0;
 	m_xStatus.currentTick = 0;
 	m_xStatus.pxTxGoSemaphore = NULL;
@@ -88,6 +88,9 @@ bool Agent::addStruct(string name, void *pData, size_t size, eDataDirection dire
 		return false;
 
 	if (m_xStatus.xStructures.find(name) != m_xStatus.xStructures.end())
+		return false;
+
+	if ((size + sizeof(sHeader) + sizeof(sDataStruct)) > AGENT_MAX_PACKET_SIZE)
 		return false;
 
 	sStructInfo xStruct;

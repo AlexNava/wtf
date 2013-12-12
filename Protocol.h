@@ -66,7 +66,10 @@ typedef struct
 
 typedef struct
 {
-} sConfig;
+	Uint16	id;
+	Uint16	reserved;
+	Uint32	time;	// Ticks
+} sDataStruct;
 
 typedef struct
 {
