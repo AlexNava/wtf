@@ -49,6 +49,8 @@ typedef struct
 	map<string, sStructInfo> xStructures;
 } AgentStatus;
 
+Sint32 diffWithOverflow(Uint32, Uint32);
+
 class Agent
 {
 public:
@@ -57,7 +59,7 @@ public:
 	bool init(string name, string famName = "");
 
 	bool addStruct(string name, void *pData, size_t size, eDataDirection direction, Uint8 period = 1);
-	bool setStepCallback(void *);
+	bool setStepCallback(void (*stepFunc)());
 	void run();
 
 protected:
@@ -65,6 +67,7 @@ protected:
 private:
 	SDL_Thread *m_pxRxThread;
 	SDL_Thread *m_pxTxThread;
+	void (*m_pStepFunc)();
 };
 
 #endif /* AGENT_H_ */

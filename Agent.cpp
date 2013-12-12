@@ -7,6 +7,27 @@
 
 #include "Agent.h"
 
+Sint32 diffWithOverflow(Uint32 curr, Uint32 prev)
+{
+	Uint32 diff;
+	if (curr > prev)
+	{
+		diff = curr - prev;
+		if (diff < (Uint32)(1 << 31))
+			return diff;
+		else
+			return -(~diff + 1);
+	}
+	else
+	{
+		diff = prev - curr;
+		if (diff < (Uint32)(1 << 31))
+			return -diff;
+		else
+			return (~diff) + 1;
+	}
+}
+
 Agent::Agent()
 {
 	m_xStatus.strName = "";
@@ -21,6 +42,8 @@ Agent::Agent()
 	m_xStatus.pxSendSemaphore = NULL;
 	m_pxRxThread = NULL;
 	m_pxTxThread = NULL;
+
+	m_pStepFunc = NULL;
 
 	if (SDL_Init(0) == -1)
 	{
@@ -76,7 +99,9 @@ void Agent::run()
 	while (true)	// Keep the main process alive
 	{
 		SDL_SemWait(m_xStatus.pxStepSemaphore);
-		// Todo: call step callback
+		// Call step callback (if it has been set)
+		if (m_pStepFunc != NULL)
+			m_pStepFunc();
 	}
 }
 
@@ -102,5 +127,11 @@ bool Agent::addStruct(string name, void *pData, size_t size, eDataDirection dire
 
 	m_xStatus.xStructures.insert(pair<string, sStructInfo>(name, xStruct));
 
+	return true;
+}
+
+bool Agent::setStepCallback(void (*stepFunc)())
+{
+	m_pStepFunc = stepFunc;
 	return true;
 }
