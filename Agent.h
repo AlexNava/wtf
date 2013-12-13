@@ -49,8 +49,6 @@ typedef struct
 	map<string, sStructInfo> xStructures;
 } AgentStatus;
 
-Sint32 diffWithOverflow(Uint32, Uint32);
-
 class Agent
 {
 public:

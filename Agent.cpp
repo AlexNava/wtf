@@ -7,27 +7,6 @@
 
 #include "Agent.h"
 
-Sint32 diffWithOverflow(Uint32 curr, Uint32 prev)
-{
-	Uint32 diff;
-	if (curr > prev)
-	{
-		diff = curr - prev;
-		if (diff < (Uint32)(1 << 31))
-			return diff;
-		else
-			return -(~diff + 1);
-	}
-	else
-	{
-		diff = prev - curr;
-		if (diff < (Uint32)(1 << 31))
-			return -diff;
-		else
-			return (~diff) + 1;
-	}
-}
-
 Agent::Agent()
 {
 	m_xStatus.strName = "";
@@ -101,7 +80,7 @@ void Agent::run()
 		SDL_SemWait(m_xStatus.pxStepSemaphore);
 
 		// Call step callback (if it has been set)
-		Sint32 TickDelta = diffWithOverflow(m_xStatus.currentTick, m_xStatus.lastTick);
+		Sint32 TickDelta = m_xStatus.currentTick - m_xStatus.lastTick;
 		if (m_pStepFunc != NULL)
 			m_pStepFunc();
 	}

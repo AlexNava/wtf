@@ -74,7 +74,7 @@ int txQueueFunc(void *pxData)
 				break;
 
 			// Send all structures
-			Sint32 TickDelta = diffWithOverflow(pxStatus->currentTick, pxStatus->lastTick);
+			Sint32 TickDelta = pxStatus->currentTick - pxStatus->lastTick;
 			break;
 		}
 	}
