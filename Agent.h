@@ -12,6 +12,7 @@
 #include "SDL2/SDL_net.h"
 #include "SDL2/SDL_thread.h"
 #include <string>
+#include <vector>
 #include <map>
 using namespace std;
 #include "Protocol.h"
@@ -38,6 +39,16 @@ typedef struct
 {
 	string strName;
 	string strFamName;
+	IPaddress address;
+	vector<sStructInfo> structuresToSend;
+} sNeighbor;
+
+typedef map<string, sStructInfo> tStructMap;
+
+typedef struct
+{
+	string strName;
+	string strFamName;
 	Uint16 listeningPort;
 	eState eAutomaState;
 	Uint32 lastTick;
@@ -46,7 +57,8 @@ typedef struct
 	SDL_sem *pxRxGoSemaphore;
 	SDL_sem *pxStepSemaphore;
 	SDL_sem *pxSendSemaphore;
-	map<string, sStructInfo> xStructures;
+	tStructMap xStructures;
+	vector<sNeighbor> xNeighbors;
 } AgentStatus;
 
 class Agent

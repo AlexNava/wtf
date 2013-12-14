@@ -80,8 +80,50 @@ int rxQueueFunc(void *pxData)
 					if (pxStatus->eAutomaState == stateDiscover)
 					{
 						printf("Announcement message.\n");
-						//pxDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader));
+						sNeighbor xNeighbor;
+						const char *strIp = SDLNet_ResolveIP(&(pxPacket->address));
+						if (strIp == NULL)
+						{
+							break;
+						}
+						xNeighbor.strName = pxAnnounce->name;
+						xNeighbor.strFamName = pxAnnounce->familyName;
+						if (!xNeighbor.strFamName.empty()	// connect with agents of the same family or with no family specified
+								&& (xNeighbor.strFamName != pxStatus->strFamName))
+						{
+							break;
+						}
 
+						SDLNet_ResolveHost(&(xNeighbor.address), strIp, pxAnnounce->listeningPort);
+
+						for (int iSt = 0; iSt < pxAnnounce->numStructures; iSt++)
+						{
+							pxDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader) + sizeof(sAnnounce) + iSt * sizeof(sAnnounceStruct));
+							if (pxDataStruct->direction == dataOut)
+								continue;
+
+							sStructInfo xRemoteStruct;
+							string remoteStructName = pxDataStruct->name;
+							tStructMap::iterator it = pxStatus->xStructures.find(remoteStructName);
+							if (it == pxStatus->xStructures.end())
+								continue;	// No local structures with matching name
+							if (it->second.eDirection == dataIn)
+								continue;	// Local structure is declared as input
+
+							xRemoteStruct.id = pxDataStruct->id;
+							xRemoteStruct.period = pxDataStruct->period;
+							xRemoteStruct.pData = it->second.pData;	// Pass the local pointer
+							xRemoteStruct.size = it->second.size;
+
+							xNeighbor.structuresToSend.push_back(xRemoteStruct);
+						}
+
+						printf("Added neighbor %s (%s)\nWith input structures: ", xNeighbor.strName.c_str(), xNeighbor.strFamName.c_str());
+						for (int iSt = 0; iSt < xNeighbor.structuresToSend.size(); iSt++)
+						{
+							printf("%d ", xNeighbor.structuresToSend[iSt].id);
+						}
+						pxStatus->xNeighbors.push_back(xNeighbor);
 					}
 					else
 					{
@@ -89,6 +131,7 @@ int rxQueueFunc(void *pxData)
 						printf("Unexpected announcement message.\n");
 					}
 					break;
+
 				case msgCommand:
 					{
 						// Update the state machine
@@ -114,6 +157,7 @@ int rxQueueFunc(void *pxData)
 						SDL_SemPost(pxStatus->pxStepSemaphore);
 					}
 					break;
+
 				case msgDataStruct:
 					// Update input structures
 					printf("DataStruct message.\n");

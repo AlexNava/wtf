@@ -48,8 +48,8 @@ typedef struct
 
 typedef struct
 {
-	Uint8	name[AGENT_NAME_SIZE];
-	Uint8	familyName[AGENT_NAME_SIZE];
+	char	name[AGENT_NAME_SIZE];
+	char	familyName[AGENT_NAME_SIZE];
 	Uint16	listeningPort;
 	Uint16	spare;
 	Uint32	numStructures;
@@ -57,11 +57,11 @@ typedef struct
 
 typedef struct
 {
-	Uint8	name[STRUCT_NAME_SIZE];
+	char	name[STRUCT_NAME_SIZE];
 	Uint32	size;
 	Uint8	direction;
-	Uint8	period;
-	Uint16	id;	// Used only for input structures, sending nodes will have to use this ID
+	Uint8	period;	// Used for input structures
+	Uint16	id;		// Used for input structures
 } sAnnounceStruct;
 
 typedef struct

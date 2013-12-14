@@ -46,7 +46,7 @@ int txQueueFunc(void *pxData)
 				sAnnounceStruct *structArray = (sAnnounceStruct *)(pxDiscoverPacket->data + sizeof(sHeader) + sizeof (sAnnounce));
 				pHeader->msgSize = sizeof(sHeader) + sizeof (sAnnounce) + pAnnounce->numStructures * sizeof(sAnnounceStruct);
 
-				for (map<string, sStructInfo>::iterator it = pxStatus->xStructures.begin(); it != pxStatus->xStructures.end(); it++)
+				for (tStructMap::iterator it = pxStatus->xStructures.begin(); it != pxStatus->xStructures.end(); it++)
 				{
 					structArray->id = it->second.id;
 					structArray->direction = it->second.eDirection;

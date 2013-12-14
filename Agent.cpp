@@ -104,7 +104,7 @@ bool Agent::addStruct(string name, void *pData, size_t size, eDataDirection dire
 	xStruct.pData = pData;
 	xStruct.size = (pData != NULL)? size : 0;
 	xStruct.eDirection = direction;
-	xStruct.period = period;
+	xStruct.period = (direction == dataIn)? period : 0;
 
 	m_xStatus.xStructures.insert(pair<string, sStructInfo>(name, xStruct));
 
