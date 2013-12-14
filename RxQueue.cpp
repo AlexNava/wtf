@@ -123,6 +123,7 @@ int rxQueueFunc(void *pxData)
 						{
 							printf("%d ", xNeighbor.structuresToSend[iSt].id);
 						}
+						printf("\n");
 						pxStatus->xNeighbors.push_back(xNeighbor);
 					}
 					else
