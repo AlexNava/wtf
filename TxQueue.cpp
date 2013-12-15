@@ -18,6 +18,9 @@ int txQueueFunc(void *pData)
 	UDPpacket *pDiscoverPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
 	UDPsocket discoverSock = SDLNet_UDP_Open(0);
 
+	UDPpacket *pStructPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
+	UDPsocket structSock = SDLNet_UDP_Open(0);
+
 	// Wait for RX queue
 	SDL_SemWait(pStatus->pTxGoSemaphore);
 	printf("TX queue started.\n");
@@ -46,7 +49,7 @@ int txQueueFunc(void *pData)
 				sAnnounceStruct *structArray = (sAnnounceStruct *)(pDiscoverPacket->data + sizeof(sHeader) + sizeof (sAnnounce));
 				pHeader->msgSize = sizeof(sHeader) + sizeof (sAnnounce) + pAnnounce->numStructures * sizeof(sAnnounceStruct);
 
-				for (tStructMap::iterator it = pStatus->localStructures.begin(); it != pStatus->localStructures.end(); it++)
+				for (tStructMapByName::iterator it = pStatus->localStructures.begin(); it != pStatus->localStructures.end(); it++)
 				{
 					structArray->id = it->second.id;
 					structArray->direction = it->second.eDirection;
@@ -68,16 +71,43 @@ int txQueueFunc(void *pData)
 			}
 			break;
 		case stateRun:
-			// Wait for the semaphore (tx queue follows rx one)
-			SDL_SemWait(pStatus->pSendSemaphore);
-			if (pStatus->eAutomaState != stateRun)	// It can be changed by rx thread
-				break;
+			{
+				// Wait for the semaphore (tx queue follows rx one)
+				SDL_SemWait(pStatus->pSendSemaphore);
+				if (pStatus->eAutomaState != stateRun)	// It can be changed by rx thread
+					break;
 
-			SDL_LockMutex(pStatus->pOutputMutex);
-			// Send all structures
-			SDL_UnlockMutex(pStatus->pOutputMutex);
+				SDL_LockMutex(pStatus->pOutputMutex);
+				// Send all structures
+				sHeader *pHeader = (sHeader *)pStructPacket->data;
+				pHeader->msgType = msgDataStruct;
+				pHeader->spare = 0;
 
-			Sint32 tickDelta = pStatus->currentTick - pStatus->lastTick;
+				sDataStruct *pStruct = (sDataStruct *)(pStructPacket->data + sizeof(sHeader));
+				pStruct->reserved = 0;
+				pStruct->time = pStatus->currentTick;
+
+				for (Uint32 iNb = 0; iNb < pStatus->neighbors.size(); iNb++)
+				{
+					pStructPacket->address = pStatus->neighbors[iNb].address;
+
+					for (Uint32 iSt = 0; iSt < pStatus->neighbors[iNb].structuresToSend.size(); iSt++)
+					{
+						pStruct->id = pStatus->neighbors[iNb].structuresToSend[iSt].id;
+						memcpy((pStructPacket->data + sizeof(sHeader) + sizeof(sDataStruct)),
+								pStatus->neighbors[iNb].structuresToSend[iSt].pData,
+								pStatus->neighbors[iNb].structuresToSend[iSt].size);
+
+						pHeader->msgSize = sizeof(sDataStruct) + pStatus->neighbors[iNb].structuresToSend[iSt].size;
+						pHeader->checksum = calcChecksum(pHeader);
+
+						pStructPacket->len = pHeader->msgSize + sizeof(sHeader);
+						int res = SDLNet_UDP_Send(structSock, -1, pStructPacket);
+						pStatus->neighbors[iNb].structuresToSend[iSt].lastTxTick = pStatus->currentTick;
+					}
+				}
+				SDL_UnlockMutex(pStatus->pOutputMutex);
+			}
 			break;
 		}
 	}

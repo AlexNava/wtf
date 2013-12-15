@@ -25,6 +25,7 @@ Agent::Agent()
 	m_pTxThread = NULL;
 
 	m_pStepFunc = NULL;
+	m_pResetFunc = NULL;
 
 	if (SDL_Init(0) == -1)
 	{
@@ -67,6 +68,7 @@ bool Agent::init(string name, string famName)
 	m_status.pRxGoSemaphore = SDL_CreateSemaphore(0);
 	m_status.pStepSemaphore = SDL_CreateSemaphore(0);
 	m_status.pSendSemaphore = SDL_CreateSemaphore(0);
+	m_status.pResetSemaphore = SDL_CreateSemaphore(0);
 	m_status.pInputMutex = SDL_CreateMutex();
 	m_status.pOutputMutex = SDL_CreateMutex();
 	m_pRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_status);
@@ -95,6 +97,9 @@ void Agent::run()
 					m_pStepFunc();
 					SDL_UnlockMutex(m_status.pInputMutex);
 					SDL_UnlockMutex(m_status.pOutputMutex);
+					// Release TX queue
+					SDL_SemPost(m_status.pSendSemaphore);
+
 				}
 			else if (tickDelta < 0)
 				for (int iTick = 0; iTick > tickDelta; iTick--)
@@ -104,6 +109,8 @@ void Agent::run()
 					m_pStepFunc();
 					SDL_UnlockMutex(m_status.pInputMutex);
 					SDL_UnlockMutex(m_status.pOutputMutex);
+					// Release TX queue
+					SDL_SemPost(m_status.pSendSemaphore);
 				}
 		}
 	}
@@ -123,19 +130,26 @@ bool Agent::addStruct(string name, void *pData, size_t size, eDataDirection dire
 		return false;
 
 	sStructInfo structInfo;
-	structInfo.id = m_status.localStructures.size();
+	structInfo.id = m_status.localStructuresById.size();
 	structInfo.pData = pData;
 	structInfo.size = (pData != NULL)? size : 0;
 	structInfo.eDirection = direction;
 	structInfo.period = (direction == dataIn)? period : 0;
 
 	m_status.localStructures.insert(pair<string, sStructInfo>(name, structInfo));
+	m_status.localStructuresById.push_back(structInfo);
 
 	return true;
 }
 
-bool Agent::setStepCallback(void (*stepFunc)())
+bool Agent::setStepCallback(void (*pStepFunc)())
 {
-	m_pStepFunc = stepFunc;
+	m_pStepFunc = pStepFunc;
+	return true;
+}
+
+bool Agent::setResetCallback(void (*pResetFunc)())
+{
+	m_pResetFunc = pResetFunc;
 	return true;
 }

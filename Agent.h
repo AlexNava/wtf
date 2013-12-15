@@ -30,7 +30,8 @@ typedef struct
 {
 	Uint16			id;
 	eDataDirection	eDirection;
-	Uint8			period;
+	Uint32			period;
+	Uint32			lastTxTick;
 	void			*pData;
 	size_t			size;
 } sStructInfo;
@@ -43,7 +44,7 @@ typedef struct
 	vector<sStructInfo> structuresToSend;
 } sNeighbor;
 
-typedef map<string, sStructInfo> tStructMap;
+typedef map<string, sStructInfo> tStructMapByName;
 
 typedef struct
 {
@@ -56,10 +57,12 @@ typedef struct
 	SDL_sem *pTxGoSemaphore;
 	SDL_sem *pRxGoSemaphore;
 	SDL_sem *pStepSemaphore;
+	SDL_sem *pResetSemaphore;
 	SDL_sem *pSendSemaphore;
 	SDL_mutex *pInputMutex;
 	SDL_mutex *pOutputMutex;
-	tStructMap localStructures;
+	tStructMapByName localStructures;
+	vector<sStructInfo> localStructuresById;
 	vector<sNeighbor> neighbors;
 } sAgentStatus;
 
@@ -71,7 +74,8 @@ public:
 	bool init(string name, string famName = "");
 
 	bool addStruct(string name, void *pData, size_t size, eDataDirection direction, Uint8 period = 1);
-	bool setStepCallback(void (*stepFunc)());
+	bool setStepCallback(void (*pStepFunc)());
+	bool setResetCallback(void (*pResetFunc)());
 	void run();
 
 protected:
@@ -80,6 +84,7 @@ private:
 	SDL_Thread *m_pRxThread;
 	SDL_Thread *m_pTxThread;
 	void (*m_pStepFunc)();
+	void (*m_pResetFunc)();
 };
 
 #endif /* AGENT_H_ */
