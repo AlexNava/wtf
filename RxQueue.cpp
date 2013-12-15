@@ -11,32 +11,32 @@
 
 #include "Agent.h"
 
-int rxQueueFunc(void *pxData)
+int rxQueueFunc(void *pData)
 {
-	sAgentStatus *pStatus = (sAgentStatus*)pxData;
-	Uint16 iPort = AGENT_MIN_PORT;
+	sAgentStatus *pStatus = (sAgentStatus*)pData;
+	Uint16 port = AGENT_MIN_PORT;
 
-	UDPpacket *pxPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
-	UDPsocket xSock = 0;
+	UDPpacket *pPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
+	UDPsocket socket = 0;
 
 	// Wait for run()
 	SDL_SemWait(pStatus->pRxGoSemaphore);
 	printf("RX queue started.\n");
 
-	while ((xSock == 0) && (iPort < AGENT_MAX_PORT))
+	while ((socket == 0) && (port < AGENT_MAX_PORT))
 	{
-		printf("Trying port %d\n", iPort);
-		xSock = SDLNet_UDP_Open(iPort);
-		if (xSock <= 0)
-			iPort++;
+		printf("Trying port %d\n", port);
+		socket = SDLNet_UDP_Open(port);
+		if (socket <= 0)
+			port++;
 	}
 
-	printf("Listening on port %d\n", iPort);
-	pStatus->listeningPort = iPort;
+	printf("Listening on port %d\n", port);
+	pStatus->listeningPort = port;
 
-	SDLNet_SocketSet xSockSet;
-	xSockSet = SDLNet_AllocSocketSet(1);
-	SDLNet_UDP_AddSocket(xSockSet, xSock);
+	SDLNet_SocketSet sockSet;
+	sockSet = SDLNet_AllocSocketSet(1);
+	SDLNet_UDP_AddSocket(sockSet, socket);
 
 	SDL_SemPost(pStatus->pTxGoSemaphore);
 
@@ -45,7 +45,7 @@ int rxQueueFunc(void *pxData)
 		// Endless loop.
 		// Here the state machine is updated according to received packets.
 
-		int iPendingSockets = SDLNet_CheckSockets(xSockSet, 5000);
+		int iPendingSockets = SDLNet_CheckSockets(sockSet, 30000);
 
 		if (iPendingSockets <= 0)	// Timeout or error
 		{
@@ -55,32 +55,32 @@ int rxQueueFunc(void *pxData)
 		{
 			printf("Activity on %d sockets\n", iPendingSockets);
 
-			int iReceivedPackets = SDLNet_UDP_Recv(xSock, pxPacket);
-			printf("Received 1 packet, size: %d bytes\n", pxPacket->len);
+			int iReceivedPackets = SDLNet_UDP_Recv(socket, pPacket);
+			printf("Received 1 packet, size: %d bytes\n", pPacket->len);
 
-			Uint32 source = pxPacket->address.host;
+			Uint32 source = pPacket->address.host;
 			printf("Received msg from %d.%d.%d.%d - ",
 					source & 0x000000ff,
 					(source & 0x0000ff00) >> 8,
 					(source & 0x00ff0000) >> 16,
 					source >> 24);
 
-			if (messageValid(pxPacket->data, pxPacket->len))
+			if (messageValid(pPacket->data, pPacket->len))
 			{
-				sHeader		*pHeader = (sHeader *)pxPacket->data;
+				sHeader		*pHeader = (sHeader *)pPacket->data;
 
 				switch (pHeader->msgType)
 				{
 				case msgAnnounce:
 					{
 						// Update the network map
-						sAnnounce	*pAnnounce = (sAnnounce *)(pxPacket->data + sizeof(sHeader));
+						sAnnounce	*pAnnounce = (sAnnounce *)(pPacket->data + sizeof(sHeader));
 
 						if (pStatus->eAutomaState == stateDiscover)
 						{
 							printf("Announcement message.\n");
 							sNeighbor neighbor;
-							const char *strIp = SDLNet_ResolveIP(&(pxPacket->address));
+							const char *strIp = SDLNet_ResolveIP(&(pPacket->address));
 							if (strIp == NULL)
 							{
 								break;
@@ -104,7 +104,7 @@ int rxQueueFunc(void *pxData)
 							sAnnounceStruct	*pAnnStruct = NULL;
 							for (Uint32 iSt = 0; iSt < pAnnounce->numStructures; iSt++)
 							{
-								pAnnStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader) + sizeof(sAnnounce) + iSt * sizeof(sAnnounceStruct));
+								pAnnStruct = (sAnnounceStruct *)(pPacket->data + sizeof(sHeader) + sizeof(sAnnounce) + iSt * sizeof(sAnnounceStruct));
 								if (pAnnStruct->direction == dataOut)
 									continue;
 
@@ -158,7 +158,7 @@ int rxQueueFunc(void *pxData)
 				case msgCommand:
 					{
 						// Update the state machine
-						sCommand *pCommand = (sCommand *)(pxPacket->data + sizeof(sHeader));
+						sCommand *pCommand = (sCommand *)(pPacket->data + sizeof(sHeader));
 						printf("Command message %d.\n", pCommand->cmdType);
 						switch (pCommand->cmdType)
 						{
@@ -203,7 +203,7 @@ int rxQueueFunc(void *pxData)
 
 				case msgDataStruct:
 					{
-						sDataStruct	*pDataStruct = (sDataStruct *)(pxPacket->data + sizeof(sHeader));
+						sDataStruct	*pDataStruct = (sDataStruct *)(pPacket->data + sizeof(sHeader));
 						sStructInfo *pLocalStruct = NULL;
 						if (pDataStruct->id < pStatus->localStructures.size())
 							pLocalStruct = &(pStatus->localStructuresById.at(pDataStruct->id));
@@ -220,7 +220,7 @@ int rxQueueFunc(void *pxData)
 
 						SDL_LockMutex(pStatus->pInputMutex);
 						// Update input structure
-						memcpy(pLocalStruct->pData, (pxPacket->data + sizeof(sHeader) + sizeof(sDataStruct)), pLocalStruct->size);
+						memcpy(pLocalStruct->pData, (pPacket->data + sizeof(sHeader) + sizeof(sDataStruct)), pLocalStruct->size);
 						SDL_UnlockMutex(pStatus->pInputMutex);
 					}
 					break;
