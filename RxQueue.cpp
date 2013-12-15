@@ -13,14 +13,14 @@
 
 int rxQueueFunc(void *pxData)
 {
-	AgentStatus *pxStatus = (AgentStatus*)pxData;
+	sAgentStatus *pxStatus = (sAgentStatus*)pxData;
 	Uint16 iPort = AGENT_MIN_PORT;
 
 	UDPpacket *pxPacket = SDLNet_AllocPacket(AGENT_MAX_PACKET_SIZE);
 	UDPsocket xSock = 0;
 
 	// Wait for run()
-	SDL_SemWait(pxStatus->pxRxGoSemaphore);
+	SDL_SemWait(pxStatus->pRxGoSemaphore);
 	printf("RX queue started.\n");
 
 	while ((xSock == 0) && (iPort < AGENT_MAX_PORT))
@@ -38,7 +38,7 @@ int rxQueueFunc(void *pxData)
 	xSockSet = SDLNet_AllocSocketSet(1);
 	SDLNet_UDP_AddSocket(xSockSet, xSock);
 
-	SDL_SemPost(pxStatus->pxTxGoSemaphore);
+	SDL_SemPost(pxStatus->pTxGoSemaphore);
 
 	while (true)
 	{
@@ -67,16 +67,16 @@ int rxQueueFunc(void *pxData)
 
 			if (messageValid(pxPacket->data, pxPacket->len))
 			{
-				sHeader		*pxHeader = (sHeader *)pxPacket->data;
-				sAnnounce	*pxAnnounce = NULL;
-				sCommand	*pxCommand = NULL;
-				sAnnounceStruct	*pxDataStruct = NULL;
+				sHeader		*pHeader = (sHeader *)pxPacket->data;
+				sAnnounce	*pAnnounce = NULL;
+				sCommand	*pCommand = NULL;
+				sAnnounceStruct	*pDataStruct = NULL;
 
-				switch (pxHeader->msgType)
+				switch (pHeader->msgType)
 				{
 				case msgAnnounce:
 					// Update the network map
-					pxAnnounce = (sAnnounce *)(pxPacket->data + sizeof(sHeader));
+					pAnnounce = (sAnnounce *)(pxPacket->data + sizeof(sHeader));
 					if (pxStatus->eAutomaState == stateDiscover)
 					{
 						printf("Announcement message.\n");
@@ -86,45 +86,45 @@ int rxQueueFunc(void *pxData)
 						{
 							break;
 						}
-						xNeighbor.strName = pxAnnounce->name;
-						xNeighbor.strFamName = pxAnnounce->familyName;
-						if (!xNeighbor.strFamName.empty()	// connect with agents of the same family or with no family specified
-								&& (xNeighbor.strFamName != pxStatus->strFamName))
+						xNeighbor.name = pAnnounce->name;
+						xNeighbor.famName = pAnnounce->familyName;
+						if (!xNeighbor.famName.empty()	// connect with agents of the same family or with no family specified
+								&& (xNeighbor.famName != pxStatus->famName))
 						{
 							break;
 						}
 
-						SDLNet_ResolveHost(&(xNeighbor.address), strIp, pxAnnounce->listeningPort);
+						SDLNet_ResolveHost(&(xNeighbor.address), strIp, pAnnounce->listeningPort);
 
-						for (int iSt = 0; iSt < pxAnnounce->numStructures; iSt++)
+						for (int iSt = 0; iSt < pAnnounce->numStructures; iSt++)
 						{
-							pxDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader) + sizeof(sAnnounce) + iSt * sizeof(sAnnounceStruct));
-							if (pxDataStruct->direction == dataOut)
+							pDataStruct = (sAnnounceStruct *)(pxPacket->data + sizeof(sHeader) + sizeof(sAnnounce) + iSt * sizeof(sAnnounceStruct));
+							if (pDataStruct->direction == dataOut)
 								continue;
 
 							sStructInfo xRemoteStruct;
-							string remoteStructName = pxDataStruct->name;
-							tStructMap::iterator it = pxStatus->xStructures.find(remoteStructName);
-							if (it == pxStatus->xStructures.end())
+							string remoteStructName = pDataStruct->name;
+							tStructMap::iterator it = pxStatus->localStructures.find(remoteStructName);
+							if (it == pxStatus->localStructures.end())
 								continue;	// No local structures with matching name
 							if (it->second.eDirection == dataIn)
 								continue;	// Local structure is declared as input
 
-							xRemoteStruct.id = pxDataStruct->id;
-							xRemoteStruct.period = pxDataStruct->period;
+							xRemoteStruct.id = pDataStruct->id;
+							xRemoteStruct.period = pDataStruct->period;
 							xRemoteStruct.pData = it->second.pData;	// Pass the local pointer
 							xRemoteStruct.size = it->second.size;
 
 							xNeighbor.structuresToSend.push_back(xRemoteStruct);
 						}
 
-						printf("Added neighbor %s (%s)\nWith input structures: ", xNeighbor.strName.c_str(), xNeighbor.strFamName.c_str());
+						printf("Added neighbor %s (%s)\nWith input structures: ", xNeighbor.name.c_str(), xNeighbor.famName.c_str());
 						for (int iSt = 0; iSt < xNeighbor.structuresToSend.size(); iSt++)
 						{
 							printf("%d ", xNeighbor.structuresToSend[iSt].id);
 						}
 						printf("\n");
-						pxStatus->xNeighbors.push_back(xNeighbor);
+						pxStatus->neighbors.push_back(xNeighbor);
 					}
 					else
 					{
@@ -136,26 +136,26 @@ int rxQueueFunc(void *pxData)
 				case msgCommand:
 					{
 						// Update the state machine
-						pxCommand = (sCommand *)(pxPacket->data + sizeof(sHeader));
-						printf("Command message %d.\n", pxCommand->cmdType);
-						switch (pxCommand->cmdType)
+						pCommand = (sCommand *)(pxPacket->data + sizeof(sHeader));
+						printf("Command message %d.\n", pCommand->cmdType);
+						switch (pCommand->cmdType)
 						{
 						case cmdReset:
 							pxStatus->eAutomaState = stateSetup;
-							pxStatus->lastTick = pxCommand->cmdData;
-							pxStatus->currentTick = pxCommand->cmdData;
+							pxStatus->lastTick = pCommand->cmdData;
+							pxStatus->currentTick = pCommand->cmdData;
 							break;
 						case cmdPlay:
 							pxStatus->eAutomaState = stateRun;
 							pxStatus->lastTick = pxStatus->currentTick;
-							pxStatus->currentTick = pxCommand->cmdData;
+							pxStatus->currentTick = pCommand->cmdData;
 							break;
 						}
 
 						// Release TX queue
-						SDL_SemPost(pxStatus->pxSendSemaphore);
+						SDL_SemPost(pxStatus->pSendSemaphore);
 						// Exec step callback
-						SDL_SemPost(pxStatus->pxStepSemaphore);
+						SDL_SemPost(pxStatus->pStepSemaphore);
 					}
 					break;
 

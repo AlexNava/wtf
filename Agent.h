@@ -37,8 +37,8 @@ typedef struct
 
 typedef struct
 {
-	string strName;
-	string strFamName;
+	string name;
+	string famName;
 	IPaddress address;
 	vector<sStructInfo> structuresToSend;
 } sNeighbor;
@@ -47,19 +47,19 @@ typedef map<string, sStructInfo> tStructMap;
 
 typedef struct
 {
-	string strName;
-	string strFamName;
+	string name;
+	string famName;
 	Uint16 listeningPort;
 	eState eAutomaState;
 	Uint32 lastTick;
 	Uint32 currentTick;
-	SDL_sem *pxTxGoSemaphore;
-	SDL_sem *pxRxGoSemaphore;
-	SDL_sem *pxStepSemaphore;
-	SDL_sem *pxSendSemaphore;
-	tStructMap xStructures;
-	vector<sNeighbor> xNeighbors;
-} AgentStatus;
+	SDL_sem *pTxGoSemaphore;
+	SDL_sem *pRxGoSemaphore;
+	SDL_sem *pStepSemaphore;
+	SDL_sem *pSendSemaphore;
+	tStructMap localStructures;
+	vector<sNeighbor> neighbors;
+} sAgentStatus;
 
 class Agent
 {
@@ -73,10 +73,10 @@ public:
 	void run();
 
 protected:
-	AgentStatus m_xStatus;
+	sAgentStatus m_status;
 private:
-	SDL_Thread *m_pxRxThread;
-	SDL_Thread *m_pxTxThread;
+	SDL_Thread *m_pRxThread;
+	SDL_Thread *m_pTxThread;
 	void (*m_pStepFunc)();
 };
 

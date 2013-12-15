@@ -9,18 +9,18 @@
 
 Agent::Agent()
 {
-	m_xStatus.strName = "";
-	m_xStatus.strFamName = "";
-	m_xStatus.listeningPort = 0;
-	m_xStatus.eAutomaState = stateDiscover;
-	m_xStatus.lastTick = 0;
-	m_xStatus.currentTick = 0;
-	m_xStatus.pxTxGoSemaphore = NULL;
-	m_xStatus.pxRxGoSemaphore = NULL;
-	m_xStatus.pxStepSemaphore = NULL;
-	m_xStatus.pxSendSemaphore = NULL;
-	m_pxRxThread = NULL;
-	m_pxTxThread = NULL;
+	m_status.name = "";
+	m_status.famName = "";
+	m_status.listeningPort = 0;
+	m_status.eAutomaState = stateDiscover;
+	m_status.lastTick = 0;
+	m_status.currentTick = 0;
+	m_status.pTxGoSemaphore = NULL;
+	m_status.pRxGoSemaphore = NULL;
+	m_status.pStepSemaphore = NULL;
+	m_status.pSendSemaphore = NULL;
+	m_pRxThread = NULL;
+	m_pTxThread = NULL;
 
 	m_pStepFunc = NULL;
 
@@ -50,7 +50,7 @@ bool Agent::init(string name, string famName)
 		return false;
 	}
 
-	m_xStatus.strName = name;
+	m_status.name = name;
 
 	// Check for bad characters, but famName can be empty
 	if ((famName.size() > AGENT_NAME_SIZE)
@@ -59,14 +59,14 @@ bool Agent::init(string name, string famName)
 		return false;
 	}
 
-	m_xStatus.strFamName = famName;
+	m_status.famName = famName;
 
-	m_xStatus.pxTxGoSemaphore = SDL_CreateSemaphore(0);
-	m_xStatus.pxRxGoSemaphore = SDL_CreateSemaphore(0);
-	m_xStatus.pxStepSemaphore = SDL_CreateSemaphore(0);
-	m_xStatus.pxSendSemaphore = SDL_CreateSemaphore(0);
-	m_pxRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_xStatus);
-	m_pxTxThread = SDL_CreateThread(txQueueFunc, "Tx", &m_xStatus);
+	m_status.pTxGoSemaphore = SDL_CreateSemaphore(0);
+	m_status.pRxGoSemaphore = SDL_CreateSemaphore(0);
+	m_status.pStepSemaphore = SDL_CreateSemaphore(0);
+	m_status.pSendSemaphore = SDL_CreateSemaphore(0);
+	m_pRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_status);
+	m_pTxThread = SDL_CreateThread(txQueueFunc, "Tx", &m_status);
 
 	return true;
 }
@@ -74,15 +74,26 @@ bool Agent::init(string name, string famName)
 void Agent::run()
 {
 	// Start queues (when RX is ready, it starts TX)
-	SDL_SemPost(m_xStatus.pxRxGoSemaphore);
+	SDL_SemPost(m_status.pRxGoSemaphore);
 	while (true)	// Keep the main process alive
 	{
-		SDL_SemWait(m_xStatus.pxStepSemaphore);
+		SDL_SemWait(m_status.pStepSemaphore);
 
 		// Call step callback (if it has been set)
-		Sint32 TickDelta = m_xStatus.currentTick - m_xStatus.lastTick;
+		Sint32 tickDelta = m_status.currentTick - m_status.lastTick;
 		if (m_pStepFunc != NULL)
-			m_pStepFunc();
+		{
+			if (tickDelta > 0)
+				for (int iTick = 0; iTick < tickDelta; iTick++)
+				{
+					m_pStepFunc();
+				}
+			else if (tickDelta < 0)
+				for (int iTick = 0; iTick > tickDelta; iTick--)
+				{
+					m_pStepFunc();
+				}
+		}
 	}
 }
 
@@ -93,20 +104,20 @@ bool Agent::addStruct(string name, void *pData, size_t size, eDataDirection dire
 			|| (name.find(' ') != string::npos))
 		return false;
 
-	if (m_xStatus.xStructures.find(name) != m_xStatus.xStructures.end())
+	if (m_status.localStructures.find(name) != m_status.localStructures.end())
 		return false;
 
 	if ((size + sizeof(sHeader) + sizeof(sDataStruct)) > AGENT_MAX_PACKET_SIZE)
 		return false;
 
-	sStructInfo xStruct;
-	xStruct.id = m_xStatus.xStructures.size();
-	xStruct.pData = pData;
-	xStruct.size = (pData != NULL)? size : 0;
-	xStruct.eDirection = direction;
-	xStruct.period = (direction == dataIn)? period : 0;
+	sStructInfo structInfo;
+	structInfo.id = m_status.localStructures.size();
+	structInfo.pData = pData;
+	structInfo.size = (pData != NULL)? size : 0;
+	structInfo.eDirection = direction;
+	structInfo.period = (direction == dataIn)? period : 0;
 
-	m_xStatus.xStructures.insert(pair<string, sStructInfo>(name, xStruct));
+	m_status.localStructures.insert(pair<string, sStructInfo>(name, structInfo));
 
 	return true;
 }
