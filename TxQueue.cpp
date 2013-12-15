@@ -73,7 +73,10 @@ int txQueueFunc(void *pData)
 			if (pStatus->eAutomaState != stateRun)	// It can be changed by rx thread
 				break;
 
+			SDL_LockMutex(pStatus->pOutputMutex);
 			// Send all structures
+			SDL_UnlockMutex(pStatus->pOutputMutex);
+
 			Sint32 tickDelta = pStatus->currentTick - pStatus->lastTick;
 			break;
 		}

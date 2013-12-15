@@ -57,6 +57,8 @@ typedef struct
 	SDL_sem *pRxGoSemaphore;
 	SDL_sem *pStepSemaphore;
 	SDL_sem *pSendSemaphore;
+	SDL_mutex *pInputMutex;
+	SDL_mutex *pOutputMutex;
 	tStructMap localStructures;
 	vector<sNeighbor> neighbors;
 } sAgentStatus;

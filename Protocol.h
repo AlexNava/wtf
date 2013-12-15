@@ -14,7 +14,7 @@
 #define STRUCT_NAME_SIZE		32
 #define AGENT_MAX_PACKET_SIZE	1024
 #define AGENT_MIN_PORT			2013
-#define AGENT_MAX_PORT			3013
+#define AGENT_MAX_PORT			2113
 
 Uint32 calcChecksum(void *message);
 bool messageValid(void *message, Uint32 size);
@@ -60,8 +60,9 @@ typedef struct
 	char	name[STRUCT_NAME_SIZE];
 	Uint32	size;
 	Uint8	direction;
-	Uint8	period;	// Used for input structures
+	Uint8	reserved;
 	Uint16	id;		// Used for input structures
+	Uint32	period;	// Used for input structures
 } sAnnounceStruct;
 
 typedef struct

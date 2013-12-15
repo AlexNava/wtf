@@ -19,6 +19,8 @@ Agent::Agent()
 	m_status.pRxGoSemaphore = NULL;
 	m_status.pStepSemaphore = NULL;
 	m_status.pSendSemaphore = NULL;
+	m_status.pInputMutex = NULL;
+	m_status.pOutputMutex = NULL;
 	m_pRxThread = NULL;
 	m_pTxThread = NULL;
 
@@ -65,6 +67,8 @@ bool Agent::init(string name, string famName)
 	m_status.pRxGoSemaphore = SDL_CreateSemaphore(0);
 	m_status.pStepSemaphore = SDL_CreateSemaphore(0);
 	m_status.pSendSemaphore = SDL_CreateSemaphore(0);
+	m_status.pInputMutex = SDL_CreateMutex();
+	m_status.pOutputMutex = SDL_CreateMutex();
 	m_pRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_status);
 	m_pTxThread = SDL_CreateThread(txQueueFunc, "Tx", &m_status);
 
@@ -86,12 +90,20 @@ void Agent::run()
 			if (tickDelta > 0)
 				for (int iTick = 0; iTick < tickDelta; iTick++)
 				{
+					SDL_LockMutex(m_status.pInputMutex);
+					SDL_LockMutex(m_status.pOutputMutex);
 					m_pStepFunc();
+					SDL_UnlockMutex(m_status.pInputMutex);
+					SDL_UnlockMutex(m_status.pOutputMutex);
 				}
 			else if (tickDelta < 0)
 				for (int iTick = 0; iTick > tickDelta; iTick--)
 				{
+					SDL_LockMutex(m_status.pInputMutex);
+					SDL_LockMutex(m_status.pOutputMutex);
 					m_pStepFunc();
+					SDL_UnlockMutex(m_status.pInputMutex);
+					SDL_UnlockMutex(m_status.pOutputMutex);
 				}
 		}
 	}

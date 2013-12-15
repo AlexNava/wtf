@@ -88,8 +88,14 @@ int rxQueueFunc(void *pxData)
 						}
 						neighbor.name = pAnnounce->name;
 						neighbor.famName = pAnnounce->familyName;
-						if (!neighbor.famName.empty()	// connect with agents of the same family or with no family specified
+						if (!neighbor.famName.empty()	// Connect with agents of the same family or with no family specified
 								&& (neighbor.famName != pStatus->famName))
+						{
+							break;
+						}
+
+						if ((neighbor.name == pStatus->name)	// Don't connect to myself :)
+								&& (neighbor.famName == pStatus->famName))
 						{
 							break;
 						}
@@ -125,7 +131,7 @@ int rxQueueFunc(void *pxData)
 						}
 						printf("\n");
 
-						Uint32 iMatching = -1;
+						Sint32 iMatching = -1;
 						for (int iSt = 0; iSt < pStatus->neighbors.size(); iSt++)
 						{
 							if ((pStatus->neighbors[iSt].name == neighbor.name)
@@ -174,9 +180,10 @@ int rxQueueFunc(void *pxData)
 					break;
 
 				case msgDataStruct:
-					// Update input structures
 					printf("DataStruct message.\n");
-
+					SDL_LockMutex(pStatus->pInputMutex);
+					// Update input structures
+					SDL_UnlockMutex(pStatus->pInputMutex);
 					break;
 				}
 
