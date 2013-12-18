@@ -33,8 +33,9 @@ typedef struct
 	Uint32			period;
 	Uint32			lastTxTick;
 	Uint32			lastRxTick;
-	void			*pData;
-	void			*pFutureData;
+	void			*pData;			// Working data of the model (step i)
+	void			*pWaitingData;	// Next expected data (step i+1)
+	void			*pFutureData;	// Data that may arrive before the start of stepFunc (steps > i+1)
 	size_t			size;
 } sStructInfo;
 
