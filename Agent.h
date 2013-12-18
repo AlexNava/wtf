@@ -32,7 +32,9 @@ typedef struct
 	eDataDirection	eDirection;
 	Uint32			period;
 	Uint32			lastTxTick;
+	Uint32			lastRxTick;
 	void			*pData;
+	void			*pFutureData;
 	size_t			size;
 } sStructInfo;
 

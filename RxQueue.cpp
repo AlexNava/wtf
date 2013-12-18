@@ -53,8 +53,6 @@ int rxQueueFunc(void *pData)
 		}
 		else
 		{
-			printf("Activity on %d sockets\n", iPendingSockets);
-
 			int iReceivedPackets = SDLNet_UDP_Recv(socket, pPacket);
 			printf("Received 1 packet, size: %d bytes\n", pPacket->len);
 
@@ -174,6 +172,14 @@ int rxQueueFunc(void *pData)
 									pStatus->neighbors[iNb].structuresToSend[iSt].lastTxTick = pCommand->cmdData;
 								}
 							}
+
+							for (Uint32 iSt = 0; iSt < pStatus->localStructuresById.size(); iSt++)
+							{
+								pStatus->localStructuresById[iSt].lastRxTick = pCommand->cmdData;	// Output structs too, i don't care
+							}
+
+							SDL_SemPost(pStatus->pResetSemaphore);
+
 							break;
 						case cmdPlay:
 							{
@@ -187,14 +193,10 @@ int rxQueueFunc(void *pData)
 										// Exec step callback (it will then release the TX queue)
 										SDL_SemPost(pStatus->pStepSemaphore);
 									}
-								else if (tickDelta < 0)
-									for (int iTick = 0; iTick > tickDelta; iTick--)
-									{
-										pStatus->lastTick = pStatus->currentTick;
-										pStatus->currentTick--;
-										// Exec step callback (it will then release the TX queue)
-										SDL_SemPost(pStatus->pStepSemaphore);
-									}
+								else
+								{
+									break;
+								}
 							}
 							break;
 						}
@@ -220,7 +222,7 @@ int rxQueueFunc(void *pData)
 
 						SDL_LockMutex(pStatus->pInputMutex);
 						// Update input structure
-						memcpy(pLocalStruct->pData, (pPacket->data + sizeof(sHeader) + sizeof(sDataStruct)), pLocalStruct->size);
+						memcpy(pLocalStruct->pFutureData, (pPacket->data + sizeof(sHeader) + sizeof(sDataStruct)), pLocalStruct->size);
 						SDL_UnlockMutex(pStatus->pInputMutex);
 					}
 					break;

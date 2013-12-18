@@ -132,6 +132,7 @@ bool Agent::addStruct(string name, void *pData, size_t size, eDataDirection dire
 	sStructInfo structInfo;
 	structInfo.id = m_status.localStructuresById.size();
 	structInfo.pData = pData;
+	structInfo.pFutureData = (pData != NULL)? new Uint8[size] : NULL;
 	structInfo.size = (pData != NULL)? size : 0;
 	structInfo.eDirection = direction;
 	structInfo.period = (direction == dataIn)? period : 0;
