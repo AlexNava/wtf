@@ -117,7 +117,8 @@ int rxQueueFunc(void *pData)
 								xRemoteStruct.id = pAnnStruct->id;
 								xRemoteStruct.period = pAnnStruct->period;
 								xRemoteStruct.lastTxTick = 0;
-								xRemoteStruct.pData = it->second.pData;	// Pass the local pointer
+								xRemoteStruct.pData = it->second.pData;				// Pass the local pointer
+								xRemoteStruct.pFutureData = it->second.pFutureData;	// Pass the local pointer
 								xRemoteStruct.size = it->second.size;
 
 								neighbor.structuresToSend.push_back(xRemoteStruct);
@@ -183,20 +184,15 @@ int rxQueueFunc(void *pData)
 							break;
 						case cmdPlay:
 							{
+								SDL_LockMutex(pStatus->pStepMutex);
 								pStatus->eAutomaState = stateRun;
 								Sint32 tickDelta = pStatus->currentTick - pCommand->cmdData;
-								if (tickDelta > 0)
-									for (int iTick = 0; iTick < tickDelta; iTick++)
-									{
-										pStatus->lastTick = pStatus->currentTick;
-										pStatus->currentTick++;
-										// Exec step callback (it will then release the TX queue)
-										SDL_SemPost(pStatus->pStepSemaphore);
-									}
-								else
+								for (int iTick = SDL_SemValue(pStatus->pStepSemaphore); iTick < tickDelta; iTick++)
 								{
-									break;
+									// Exec step callback n times (it will then release the TX queue)
+									SDL_SemPost(pStatus->pStepSemaphore);
 								}
+								SDL_UnlockMutex(pStatus->pStepMutex);
 							}
 							break;
 						}
@@ -220,10 +216,13 @@ int rxQueueFunc(void *pData)
 							break;
 						}
 
-						SDL_LockMutex(pStatus->pInputMutex);
+						SDL_LockMutex(pStatus->pStepMutex);
 						// Update input structure
-						memcpy(pLocalStruct->pFutureData, (pPacket->data + sizeof(sHeader) + sizeof(sDataStruct)), pLocalStruct->size);
-						SDL_UnlockMutex(pStatus->pInputMutex);
+						if (pDataStruct->time == pStatus->currentTick)
+							memcpy(pLocalStruct->pFutureData, (pPacket->data + sizeof(sHeader) + sizeof(sDataStruct)), pLocalStruct->size);
+						else if (pDataStruct->time >= pStatus->currentTick + 1)
+							memcpy(pLocalStruct->pWaitingData, (pPacket->data + sizeof(sHeader) + sizeof(sDataStruct)), pLocalStruct->size);
+						SDL_UnlockMutex(pStatus->pStepMutex);
 					}
 					break;
 				}

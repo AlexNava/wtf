@@ -21,6 +21,7 @@ Agent::Agent()
 	m_status.pSendSemaphore = NULL;
 	m_status.pInputMutex = NULL;
 	m_status.pOutputMutex = NULL;
+	m_status.pStepMutex = NULL;
 	m_pRxThread = NULL;
 	m_pTxThread = NULL;
 
@@ -71,6 +72,7 @@ bool Agent::init(string name, string famName)
 	m_status.pResetSemaphore = SDL_CreateSemaphore(0);
 	m_status.pInputMutex = SDL_CreateMutex();
 	m_status.pOutputMutex = SDL_CreateMutex();
+	m_status.pStepMutex = SDL_CreateMutex();
 	m_pRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_status);
 	m_pTxThread = SDL_CreateThread(txQueueFunc, "Tx", &m_status);
 
@@ -81,38 +83,50 @@ void Agent::run()
 {
 	// Start queues (when RX is ready, it starts TX)
 	SDL_SemPost(m_status.pRxGoSemaphore);
-	while (true)	// Keep the main process alive
+	while (true)	// Run in the main process and never return
 	{
 		SDL_SemWait(m_status.pStepSemaphore);
 
+		SDL_LockMutex(m_status.pStepMutex);
 		// Call step callback (if it has been set)
-		Sint32 tickDelta = m_status.currentTick - m_status.lastTick;
-		if (m_pStepFunc != NULL)
+		if ((m_status.eAutomaState == stateRun) && (m_pStepFunc != NULL))
 		{
-			if (tickDelta > 0)
-				for (int iTick = 0; iTick < tickDelta; iTick++)
+			SDL_LockMutex(m_status.pInputMutex);
+			for (int iSt = 0; iSt < m_status.localStructuresById.size(); iSt++)
+			{
+				if (m_status.localStructuresById[iSt].eDirection == dataIn)
 				{
-					SDL_LockMutex(m_status.pInputMutex);
-					SDL_LockMutex(m_status.pOutputMutex);
-					m_pStepFunc();
-					SDL_UnlockMutex(m_status.pInputMutex);
-					SDL_UnlockMutex(m_status.pOutputMutex);
-					// Release TX queue
-					SDL_SemPost(m_status.pSendSemaphore);
+					memcpy(m_status.localStructuresById[iSt].pData, m_status.localStructuresById[iSt].pFutureData, m_status.localStructuresById[iSt].size);
+					// Swap buffers instead of copying (i don't care about buffers in the struct map)
+					void *pTemp = m_status.localStructuresById[iSt].pFutureData;
+					m_status.localStructuresById[iSt].pFutureData = m_status.localStructuresById[iSt].pWaitingData;
+					m_status.localStructuresById[iSt].pWaitingData = pTemp;
+				}
+			}
+			SDL_UnlockMutex(m_status.pInputMutex);
 
-				}
-			else if (tickDelta < 0)
-				for (int iTick = 0; iTick > tickDelta; iTick--)
+			m_status.lastTick = m_status.currentTick++;
+			m_pStepFunc();
+
+			SDL_LockMutex(m_status.pOutputMutex);
+			for (int iSt = 0; iSt < m_status.localStructuresById.size(); iSt++)
+			{
+				if (m_status.localStructuresById[iSt].eDirection == dataOut)
 				{
-					SDL_LockMutex(m_status.pInputMutex);
-					SDL_LockMutex(m_status.pOutputMutex);
-					m_pStepFunc();
-					SDL_UnlockMutex(m_status.pInputMutex);
-					SDL_UnlockMutex(m_status.pOutputMutex);
-					// Release TX queue
-					SDL_SemPost(m_status.pSendSemaphore);
+					memcpy(m_status.localStructuresById[iSt].pFutureData, m_status.localStructuresById[iSt].pData, m_status.localStructuresById[iSt].size);
 				}
+			}
+			SDL_UnlockMutex(m_status.pOutputMutex);
+			// Release TX queue
+			SDL_SemPost(m_status.pSendSemaphore);
 		}
+		else if ((m_status.eAutomaState == stateSetup) && (m_pResetFunc != NULL))
+		{
+			SDL_LockMutex(m_status.pOutputMutex);
+			m_pResetFunc();
+			SDL_UnlockMutex(m_status.pOutputMutex);
+		}
+		SDL_UnlockMutex(m_status.pStepMutex);
 	}
 }
 
@@ -133,7 +147,7 @@ bool Agent::addStruct(string name, void *pData, size_t size, eDataDirection dire
 	structInfo.id = m_status.localStructuresById.size();
 	structInfo.pData = pData;
 	structInfo.pWaitingData = (pData != NULL)? new char[size] : NULL;
-	structInfo.pFutureData = (pData != NULL)? new char[size] : NULL;
+	structInfo.pFutureData = ((pData != NULL) && (direction == dataIn))? new char[size] : NULL;
 	structInfo.size = (pData != NULL)? size : 0;
 	structInfo.eDirection = direction;
 	structInfo.period = (direction == dataIn)? period : 0;

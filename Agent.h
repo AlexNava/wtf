@@ -34,8 +34,8 @@ typedef struct
 	Uint32			lastTxTick;
 	Uint32			lastRxTick;
 	void			*pData;			// Working data of the model (step i)
-	void			*pWaitingData;	// Next expected data (step i+1)
-	void			*pFutureData;	// Data that may arrive before the start of stepFunc (steps > i+1)
+	void			*pWaitingData;	// Rx: next expected data (step i+1); TX: data to send at next iteration
+	void			*pFutureData;	// Data that may arrive before the start of stepFunc (steps > i+1) (not used for TX)
 	size_t			size;
 } sStructInfo;
 
@@ -64,6 +64,7 @@ typedef struct
 	SDL_sem *pSendSemaphore;
 	SDL_mutex *pInputMutex;
 	SDL_mutex *pOutputMutex;
+	SDL_mutex *pStepMutex;
 	tStructMapByName localStructures;
 	vector<sStructInfo> localStructuresById;
 	vector<sNeighbor> neighbors;
