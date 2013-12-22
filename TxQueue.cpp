@@ -95,7 +95,7 @@ int txQueueFunc(void *pData)
 					{
 						pStruct->id = pStatus->neighbors[iNb].structuresToSend[iSt].id;
 						memcpy((pStructPacket->data + sizeof(sHeader) + sizeof(sDataStruct)),
-								pStatus->neighbors[iNb].structuresToSend[iSt].pData,
+								pStatus->neighbors[iNb].structuresToSend[iSt].pFutureData,
 								pStatus->neighbors[iNb].structuresToSend[iSt].size);
 
 						pHeader->msgSize = sizeof(sDataStruct) + pStatus->neighbors[iNb].structuresToSend[iSt].size;
