@@ -92,7 +92,7 @@ void Agent::run()
 		if ((m_status.eAutomaState == stateRun) && (m_pStepFunc != NULL))
 		{
 			SDL_LockMutex(m_status.pInputMutex);
-			for (int iSt = 0; iSt < m_status.localStructuresById.size(); iSt++)
+			for (Uint32 iSt = 0; iSt < m_status.localStructuresById.size(); iSt++)
 			{
 				if (m_status.localStructuresById[iSt].eDirection == dataIn)
 				{
@@ -109,7 +109,7 @@ void Agent::run()
 			m_pStepFunc();
 
 			SDL_LockMutex(m_status.pOutputMutex);
-			for (int iSt = 0; iSt < m_status.localStructuresById.size(); iSt++)
+			for (Uint32 iSt = 0; iSt < m_status.localStructuresById.size(); iSt++)
 			{
 				if (m_status.localStructuresById[iSt].eDirection == dataOut)
 				{
