@@ -6,6 +6,7 @@
  */
 
 #include "Agent.h"
+#include <fstream>
 
 Agent::Agent()
 {
@@ -76,6 +77,25 @@ bool Agent::init(string name, string famName)
 	m_pRxThread = SDL_CreateThread(rxQueueFunc, "Rx", &m_status);
 	m_pTxThread = SDL_CreateThread(txQueueFunc, "Tx", &m_status);
 
+	ifstream discoverAddressesFile;
+	discoverAddressesFile.open("./discover.txt");
+	if ((discoverAddressesFile.rdstate() & ifstream::failbit) == 0)
+	{
+		while (!discoverAddressesFile.eof())
+		{
+			string addressLine;
+			getline(discoverAddressesFile, addressLine);
+			if (addressLine.empty())
+				continue;
+			m_status.discoverAddresses.push_back(addressLine);
+			printf("Addead address to discover: %s\n", addressLine.c_str());
+		}
+	}
+	else
+	{
+		printf("discover.txt file not found, skipping\n");
+	}
+	discoverAddressesFile.close();
 	return true;
 }
 

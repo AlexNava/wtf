@@ -13,6 +13,7 @@
 #include "SDL2/SDL_thread.h"
 #include <string>
 #include <vector>
+#include <list>
 #include <map>
 using namespace std;
 #include "Protocol.h"
@@ -68,6 +69,7 @@ typedef struct
 	tStructMapByName localStructures;
 	vector<sStructInfo> localStructuresById;
 	vector<sNeighbor> neighbors;
+	list<string> discoverAddresses;
 } sAgentStatus;
 
 class Agent
